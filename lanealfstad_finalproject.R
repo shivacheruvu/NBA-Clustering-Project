@@ -43,56 +43,6 @@ player_data_processed <- game_data %>%
          PF = PF / MP,
          PTS = PTS / MP)
 
-##### k-means clustering #####
-player_train_prep <- player_data_processed %>% 
-  select(-Rk,
-         -Player,
-         -Pos, 
-         -Tm,
-         -G,
-         -GS,
-         -MP,
-         -Age) %>%
-  scale() %>% 
-  as.data.frame()
-
-player_kmeans <- kmeans(player_train_prep, centers = 5, nstart = 100)
-table(player_data_processed$Pos, player_kmeans$cluster)
-
-# scree plot
-wss <- 0
-
-for (i in 1:15) {
-  km.out <- kmeans(player_train_prep, centers = i, nstart=20)
-  wss[i] <- km.out$tot.withinss
-  
-}
-
-plot(1:15, wss, type = "b", 
-     xlab = "Number of Clusters", 
-     ylab = "Within groups sum of squares")
-
-
-##### hierarchical clustering #####
-
-distances <- dist(player_train_prep, method = "euclidean")
-player_hclust <- hclust(distances, method = "complete")
-plot(player_hclust)
-
-player_hclust_clust = cutree(player_hclust, k = 5)
-table(player_data_processed$Pos, player_hclust_clust)
-
-##### Spectral clustering #####
-
-player_specc <- specc(x=as.matrix(player_train_prep), centers=5, kernel='rbfdot') 
-table(player_data_processed$Pos, player_specc@.Data)
-
-
-##### GMM #####
-
-player_gmm <- Mclust(player_train_prep, G=1:5)
-table(player_data_processed$Pos, player_gmm$classification)
-
 ##### baseline mode #####
 
 pos_count <- table(player_data_processed$Pos)
