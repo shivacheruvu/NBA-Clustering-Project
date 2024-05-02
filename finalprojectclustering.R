@@ -7,7 +7,7 @@ library(caTools)
 library(dplyr)
 
 # Data Prep
-game_data = read.csv("C:/Users/mylmi/OneDrive/Documents/School/Fall2023/IE5533/game_data.txt")
+game_data = read.csv("C:/Users/mylmi/OneDrive/Documents/School/Spring2024/CSCI5523/game_data.txt")
 
 game_data
 
@@ -61,83 +61,10 @@ table(playerclusters, y2)
 kmc = kmeans(player_data_cluster, centers = 5, nstart = 20)
 table(kmc$cluster, y2)
 
-# Scree Plot
-metrics = data.frame(
-  matrix(nrow=0, ncol = 2,
-         dimnames = list( c() , c("k", "within_cluster_sums"))))
-for (i in 2:10) {
-  pos_kmc <- kmeans(playervector, centers = i,nstart = 10)
-  metrics[i,"k"] = i
-  metrics[i,"within_cluster_sums"] = pos_kmc$tot.withinss
-}
-print(metrics)
+# Spectral Clustering
+player_specc <- specc(x=as.matrix(player_train_prep), centers=5, kernel='rbfdot') 
+table(player_data_processed$Pos, player_specc@.Data)
 
-ggplot(data = metrics, aes(x = k, y= within_cluster_sums)) +
-  geom_point(size = 4, shape = 20, col = "blue") +
-  geom_line() +
-  ggtitle("Scree Plot") +
-  theme_bw() +
-  theme(text = element_text(size =25))
-
-# "elbow" is at 3 or 4 clusters. Try clustering with those? 
-# 3 Clusters
-# Hierarchical
-playerclusters = cutree(clusterintensity, k = 3)
-playerclusters
-y2 = t(player_data_processed$Pos)
-table(playerclusters, y2)
-
-
-# K means
-kmc = kmeans(player_data_cluster, centers = 3, nstart = 20)
-table(kmc$cluster, y2)
-
-# 4 Clusters
-# Hierarchical
-playerclusters = cutree(clusterintensity, k = 4)
-playerclusters
-y2 = t(player_data_processed$Pos)
-table(playerclusters, y2)
-
-
-# K means
-kmc = kmeans(player_data_cluster, centers = 4, nstart = 20)
-table(kmc$cluster, y2)
-
-
-# Clustering Using Only Variables from Decision Tree
-treedata = subset(player_data_processed, select = c('TRB', 'AST'))
-
-# 5 Clusters
-distance = dist(treedata, method = "euclidean")
-clusterintensity = hclust(distance, method = "ward.D2")
-
-plot(clusterintensity)
-
-playerclusters = cutree(clusterintensity, k = 5)
-y2 = t(player_data_processed$Pos)
-table(playerclusters, y2)
-
-# K means
-kmc = kmeans(treedata, centers = 5, nstart = 20)
-table(kmc$cluster, y2)
-
-# 4 Clusters
-# Hierarchical
-playerclusters = cutree(clusterintensity, k = 4)
-y2 = t(player_data_processed$Pos)
-table(playerclusters, y2)
-
-# K means
-kmc = kmeans(treedata, centers = 4, nstart = 20)
-table(kmc$cluster, y2)
-
-# 3 Clusters
-# Hierarchical
-playerclusters = cutree(clusterintensity, k = 3)
-y2 = t(player_data_processed$Pos)
-table(playerclusters, y2)
-
-# K means
-kmc = kmeans(treedata, centers = 3, nstart = 20)
-table(kmc$cluster, y2)
+# Gaussian Mixture Model
+player_gmm <- Mclust(player_train_prep, G=1:5)
+table(player_data_processed$Pos, player_gmm$classification)
